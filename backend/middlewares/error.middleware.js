@@ -1,11 +1,10 @@
 import AppError from '../utils/AppError.js';
 
 const handleMongooseValidationError = (error)=>{
-  const errors = Object.values(error.errors).map((err)=>({
-    field: error.path,
-    message: error.message
-  }));
-
+ const errors = Object.values(error.errors).map((err) => ({
+  field: err.path,    
+  message: err.message
+}));
   return new AppError("Validation Error", 400,errors);  
 }
 

@@ -1,31 +1,82 @@
 import axios from "axios";
+import { getStore } from "../app/store/storeRef";
+import { resetAuth } from "../rtk/auth/authSlice";
+
 const API = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  withCredentials:true,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-API.interceptors.request.use(
-  (config) => {
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+let isRefreshing = false;
+let failedQueue = [];
 
-  },
+const processQueue = (error) => {
+  failedQueue.forEach((promise) => {
+    if (error) {
+      promise.reject(error);
+    } else {
+      promise.resolve();
+    }
+  });
+  failedQueue = [];
+};
+
+API.interceptors.request.use(
+  (config) => config,
+  (error) => Promise.reject(error),
 );
 
-API.interceptors.response.use(
-  (res) => {
-    return res;
-  },
-  (error) => {
-    let originalRequest = error.config;
 
-    if(error.response?.status===401 && originalRequest)
+API.interceptors.response.use(
+  (res) => res,
+  async (error) => {
+    // error.config
+    //error.response
+    const originalRequest = error.config;
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url.includes("auth/refresh") &&
+      !originalRequest.url.includes("auth/login") &&
+  !originalRequest.url.includes("auth/signup")
+    ) {
+     
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then(() => API(originalRequest))
+          .catch((err) => Promise.reject(err));
+      }
+
+      console.log("🔄 Access token expired — attempting silent refresh...");
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        await API.post("/auth/refresh");
+        console.log("✅ Silent refresh SUCCESS — retrying original request");
+        processQueue(null);
+        return API(originalRequest);
+      } catch (refreshError) {
+        console.log("❌ Silent refresh FAILED — redirecting to login");
+        processQueue(refreshError);
+        getStore()?.dispatch(resetAuth());
+        window.location.href = "/";
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    return Promise.reject(error);
   },
 );
 
 export default API;
+

@@ -7,6 +7,7 @@ import {
 } from "../utils/generateToken.js";
 import {
   accessTokenCookieOptions,
+  clearCookieOptions,
   refreshTokenCookieOptions,
 } from "../config/cookieOptions.js";
 import jwt from "jsonwebtoken";
@@ -71,14 +72,15 @@ const login = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
-    message: "succesffuly Loggedin",
+    message: "Your are Logged in",
     data: user,
   });
 });
 
 const refresh = catchAsync(async (req, res, next) => {
+  console.log("🔄 [REFRESH] Token refresh requested at", new Date().toISOString());
   let oldRefreshToken = req.cookies.refreshToken;
-  if (oldRefreshToken === null || oldRefreshToken === "") {
+  if (!oldRefreshToken) {
     throw new AppError("Refresh token not found. Please login", 400);
   }
 
@@ -106,7 +108,7 @@ const refresh = catchAsync(async (req, res, next) => {
     email: user.email,
     role: user.role,
   });
-  const newRefreshToken = generateAccessToken({
+  const newRefreshToken = generateRefreshToken({
     _id: user._id,
     email: user.email,
     role: user.role,
@@ -118,15 +120,13 @@ const refresh = catchAsync(async (req, res, next) => {
   res.cookie("accessToken", newAccessToken, accessTokenCookieOptions);
   res.cookie("refreshToken", newRefreshToken, refreshTokenCookieOptions);
 
+   console.log("✅ [REFRESH] New tokens issued for user:", user.email);
+
   res.status(200).json({
     status: "success",
     message: "Token refreshed successfully",
   });
 
-   res.status(200).json({
-    status: "success",
-    message: "Logged out successfully"
-  });
 });
 
 const logout = catchAsync(async (req, res, next) => {
@@ -137,7 +137,24 @@ const logout = catchAsync(async (req, res, next) => {
     path: "/api/v1/auth/refresh",
   });
 
-
+  res.status(200).json({
+   status:"success",
+   message:"Logout successfully"
+  })
 });
 
-export { signup, login,logout };
+
+const getMe = catchAsync(async (req,res,next)=>{ 
+  const user = await User.findById(req.user._id).select('-refreshToken -password');
+  if(!user)
+  {
+    throw new AppError("User not found",404);
+  }
+
+  res.status(200).json({
+    status:"success",
+    data:user
+  })
+})
+
+export { signup, login,logout,refresh, getMe };

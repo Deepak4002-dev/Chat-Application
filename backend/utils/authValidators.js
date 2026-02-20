@@ -51,7 +51,7 @@ const loginSchema = joi.object({
         "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%&])[A-Za-z\\d!@#$%^&*]{8,}$",
       ),
     )
-    .message({
+    .messages({
       "string.base": "Password must be a string",
       "string.empty": "Password is required",
       "string.min": "Password Length must be minimum 8",

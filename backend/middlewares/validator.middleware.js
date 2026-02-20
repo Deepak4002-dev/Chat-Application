@@ -20,7 +20,7 @@ const validator = (schema,property='body')=>{
     }
 
     req[property] = value;
-     next();
+    next();
   }
 }
 
