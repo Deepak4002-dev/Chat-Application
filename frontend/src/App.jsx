@@ -7,6 +7,12 @@ import UserLayout from "./layout/UserLayout";
 import Dashboard from "./components/user/Dashboard";
 import { Toaster } from "sonner";
 import PublicRoute from "./components/common/PublicRoute";
+import FriendSuggestions from "./pages/user/FriendSuggestions";
+import FriendRequests from "./pages/user/FriendRequests";
+import PrivateChats from "./pages/user/PrivateChats";
+import ChatRoom from "./pages/user/ChatRoom";
+import CreateGroup from "./pages/user/CreateGroup";
+import GroupChats from "./pages/user/GroupChats";
 
 const App = () => {
   return (
@@ -43,6 +49,12 @@ const App = () => {
           }
         >
           <Route index element={<Dashboard />} />
+          <Route path="suggestions" element={<FriendSuggestions />} />
+          <Route path="requests" element={<FriendRequests />} />
+          <Route path="private-chats" element={<PrivateChats />} />
+          <Route path="create-group" element={<CreateGroup />} />
+          <Route path="group-chats" element={<GroupChats />} />
+          <Route path=":id" element={<ChatRoom />} />
         </Route>
       </Routes>
     </BrowserRouter>

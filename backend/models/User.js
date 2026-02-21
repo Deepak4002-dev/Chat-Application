@@ -2,8 +2,29 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 const { Schema } = mongoose;
 
+const profilePicSchema = new Schema({
+  publicId:{
+    type:String,
+    required:true
+  },
+  secureUrl:{
+    type:String,
+    required:true
+  }
+},{
+  _id:false
+}
+)
+
+
+
 const userSchema = new Schema(
   {
+    fullname:{
+      type:String,
+      required:true,
+      trim:true,
+    },
     username: {
       type: String,
       required: true,
@@ -27,6 +48,14 @@ const userSchema = new Schema(
       type:String,
       enum: ["admin","user"],
       default: "user"
+    },
+    isOnline:{
+      type:Boolean,
+      default:false
+    },
+    profilePic:{
+     type:profilePicSchema,
+     required:false
     },
     refreshToken:{
       type:String,

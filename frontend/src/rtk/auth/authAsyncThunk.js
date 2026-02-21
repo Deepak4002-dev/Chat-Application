@@ -8,7 +8,7 @@ const login = createAsyncThunk(
       const res = await API.post("/auth/login", data);
       return res.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Network Error");
+      return rejectWithValue(error.response.data || "Network Error");
     }
   },
 );
@@ -20,7 +20,7 @@ const signup = createAsyncThunk(
       const res = await API.post("/auth/signup", data);
       return res.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Network Error");
+      return rejectWithValue(error.response.data || "Network Error");
     }
   },
 );
@@ -31,7 +31,7 @@ const getMe = createAsyncThunk("auth/get-me",
       const res = await API.get('/auth/get-me');
       return res.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Network Error");
+      return rejectWithValue(error.response.data || "Network Error");
     }
   }
 )
