@@ -4,11 +4,13 @@ import cors from 'cors'
 import connectDB from './config/db.js';
 import errorHandler from './middlewares/error.middleware.js';
 import cookieParser from 'cookie-parser';
+import AppError from './utils/AppError.js';
 connectDB();
 
 
 {/* Routes */}
 import authRoutes from './routes/auth.route.js';
+import friendRoutes from './routes/friend.route.js';
 const app = express();
 app.use(cors({
   origin:"http://localhost:5173",
@@ -21,9 +23,12 @@ app.use(express.urlencoded({extended:true}));
 
 
 app.use('/api/v1/auth',authRoutes);
+app.use('/api/v1/friend',friendRoutes);
 
 
-app.use(errorHandler)
-
+app.all('/{*path}', (req, res, next) => {
+  next(new AppError(`Cannot find ${req.originalUrl} on this server`, 404));
+});
+app.use(errorHandler);
 
 export default app;

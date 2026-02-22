@@ -65,6 +65,7 @@ const login = catchAsync(async (req, res, next) => {
   res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
 
   existingUser.refreshToken = refreshToken;
+  existingUser.isOnline = true;
   const user = await existingUser.save({ validateBeforeSave: false });
 
   user.password = undefined;
@@ -130,7 +131,7 @@ const refresh = catchAsync(async (req, res, next) => {
 });
 
 const logout = catchAsync(async (req, res, next) => {
-  await User.findByIdAndUpdate(req.user._id, { refreshToken: null });
+  await User.findByIdAndUpdate(req.user._id, { refreshToken: null, isOnline:false });
   res.clearCookie("accessToken", clearCookieOptions);
   res.clearCookie("refreshToken", {
     ...clearCookieOptions,

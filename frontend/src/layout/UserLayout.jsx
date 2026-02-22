@@ -19,10 +19,11 @@ const UserLayout = () => {
         <div className="ml-60">
           <Sidebar />
         </div>
-        <div className="flex flex-col flex-1">
+        <div className="flex flex-col flex-1 h-screen overflow-hidden">
           <Navbar />
-
-          <Outlet />
+          <div className="flex-1 h-auto overflow-y-auto">
+            <Outlet />
+          </div>
         </div>
       </div>
     </div>

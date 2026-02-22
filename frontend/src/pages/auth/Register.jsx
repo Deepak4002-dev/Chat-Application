@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { signup } from "../../rtk/auth/authAsyncThunk";
 import { toast } from "sonner";
@@ -28,13 +28,17 @@ const Register = () => {
     formState: { errors, isSubmitting },
     register,
     handleSubmit,
+    reset,
   } = useForm({
     resolver: yupResolver(schema),
   });
+  const navigate = useNavigate();
   const submissionHandler = async (data) => {
     try {
       const res = await dispatch(signup(data)).unwrap();
       toast.success(res?.message);
+      reset();
+      navigate("/");
     } catch (error) {
       if (error?.errors) {
         error.errors.forEach((err) =>

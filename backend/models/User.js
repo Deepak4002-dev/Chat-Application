@@ -20,11 +20,6 @@ const profilePicSchema = new Schema({
 
 const userSchema = new Schema(
   {
-    fullname:{
-      type:String,
-      required:true,
-      trim:true,
-    },
     username: {
       type: String,
       required: true,
@@ -57,6 +52,10 @@ const userSchema = new Schema(
      type:profilePicSchema,
      required:false
     },
+    bio:{
+      type:String,
+      minlength:100
+    },
     refreshToken:{
       type:String,
       select:false
@@ -79,3 +78,10 @@ userSchema.methods.matchPassword = async function(enteredPassword)
 
 const User = mongoose.model("User", userSchema);
 export default User;
+
+
+// fullname:{
+//       type:String,
+//       required:true,
+//       trim:true,
+//     },
