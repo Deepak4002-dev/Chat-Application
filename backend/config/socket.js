@@ -19,21 +19,18 @@ export const initSocket = (httpServer)=>{
       const accessToken = cookies.accessToken;
       const decoded = verifyToken(accessToken);
       socket.user = decoded;
-      next()
+      next();
 
     } catch (error) {
-      next(error);
+      next(new Error("Authentication Error"));
     }
   })
 
    io.on("connection", (socket) => {
-    console.log(`✅ Socket connected: ${socket.id}`);
-    
-    // join a personal room using userId so you can emit to specific users later
-    socket.on("join", (userId) => {
-      socket.join(userId);
-      console.log(`User ${userId} joined room ${userId}`);
-    });
+    const room = socket.user._id.toString();
+    console.log(`✅ Socket connected: ${socket.id} | joining room: ${room}`);
+  
+    socket.join(room);
 
     socket.on("disconnect", () => {
       console.log(`❌ Socket disconnected: ${socket.id}`);

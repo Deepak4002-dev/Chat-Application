@@ -52,8 +52,6 @@ export const authSlice = createSlice({
       })
       .addCase(getMe.rejected,(state)=>{
         state.loading = false;
-        state.user = null;
-        state.isLoggedIn = false;
       })
   }
 })

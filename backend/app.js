@@ -11,6 +11,7 @@ connectDB();
 {/* Routes */}
 import authRoutes from './routes/auth.route.js';
 import friendRoutes from './routes/friend.route.js';
+import chatRoutes from './routes/chat.route.js'
 const app = express();
 app.use(cors({
   origin:"http://localhost:5173",
@@ -24,6 +25,7 @@ app.use(express.urlencoded({extended:true}));
 
 app.use('/api/v1/auth',authRoutes);
 app.use('/api/v1/friend',friendRoutes);
+app.use('/api/v1/chat',chatRoutes)
 
 
 app.all('/{*path}', (req, res, next) => {

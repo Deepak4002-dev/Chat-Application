@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
 import { toast } from "sonner";
 import API from "../../utils/API";
 
@@ -26,15 +25,52 @@ const SuggestionFriends = () => {
   const handleSendRequest = async (receiverId) => {
     try {
       setLoadingId(receiverId);
-      await axios.post("/friend/request", { receiverId });
-      toast.success("Friend request sent!");
-      setUsers((prev) =>
-        prev.map((u) =>
-          u._id === receiverId ? { ...u, requestSent: true } : u,
-        ),
-      );
+      const res = await API.post("/friend/request", {
+        receiver_id: receiverId,
+      });
+      toast.success(res.data?.message);
+      fetchAllFriends();
     } catch (error) {
-      toast.error(error.response?.data?.message || "Error sending request");
+      toast.error(error.response?.data?.message || error.message);
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  const handleAccept = async (requestId) => {
+    try {
+      setLoadingId(requestId);
+      const res = await API.post(`/friend/accept/${requestId}`);
+      toast.success(res.data?.message);
+      fetchAllFriends();
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  const handleCancel = async (requestId) => {
+    try {
+      setLoadingId(requestId);
+      const res = await API.delete(`/friend/cancel/${requestId}`);
+      toast.success(res.data?.message);
+      fetchAllFriends();
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  const handleReject = async (requestId) => {
+    try {
+      setLoadingId(requestId);
+      const res = await API.delete(`/friend/reject/${requestId}`);
+      toast.success(res.data?.message);
+      fetchAllFriends();
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
     } finally {
       setLoadingId(null);
     }
@@ -60,48 +96,42 @@ const SuggestionFriends = () => {
                 .join("")}
             </div>
 
-            <h3 className="font-semibold text-lg text-gray-800">
+            <h3 className="font-semibold text-lg text-gray-800 mb-2">
               {u.username}
             </h3>
-            <p className="text-sm text-gray-500 mb-4">{u.email}</p>
 
-            {u.isFriend ? (
-              <span className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded-full font-medium">
+            {u.friendStatus === "friend" ? (
+              <span className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded-full">
                 Friends
               </span>
-            ) : u.requestSent ? (
-              <span className="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded-full font-medium">
-                Request Sent
-              </span>
+            ) : u.friendStatus === "request_sent" ? (
+              <button
+                onClick={() => handleCancel(u.requestId)}
+                className="px-3 py-1 text-sm bg-gray-200 text-gray-600 rounded-full"
+              >
+                Cancel Request
+              </button>
+            ) : u.friendStatus === "request_received" ? (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleAccept(u.requestId)}
+                  className="px-3 py-1 text-sm bg-green-500 text-white rounded-full"
+                >
+                  Accept
+                </button>
+                <button
+                  onClick={() => handleReject(u.requestId)}
+                  className="px-3 py-1 text-sm bg-red-400 text-white rounded-full"
+                >
+                  Reject
+                </button>
+              </div>
             ) : (
               <button
                 onClick={() => handleSendRequest(u._id)}
-                disabled={loadingId === u._id}
-                className="px-5 py-2 text-sm bg-blue-500 text-white rounded-full hover:bg-blue-600 transition flex items-center justify-center font-medium"
+                className="px-3 py-1 text-sm bg-blue-500 text-white rounded-full"
               >
-                {loadingId === u._id ? (
-                  <svg
-                    className="animate-spin h-5 w-5 mr-2 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z"
-                    ></path>
-                  </svg>
-                ) : null}
-                {loadingId === u._id ? "Sending..." : "Add Friend"}
+                Add Friend
               </button>
             )}
           </div>

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { getStore } from "../app/store/storeRef";
 import { resetAuth } from "../rtk/auth/authSlice";
+import { connectSocket, disconnectSocket } from "../rtk/socket/socketThunk";
 
 const API = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -8,7 +9,7 @@ const API = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  timeout:3000
+  timeout: 3000,
 });
 
 let isRefreshing = false;
@@ -30,7 +31,6 @@ API.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-
 API.interceptors.response.use(
   (res) => res,
   async (error) => {
@@ -43,9 +43,8 @@ API.interceptors.response.use(
       !originalRequest._retry &&
       !originalRequest.url.includes("auth/refresh") &&
       !originalRequest.url.includes("auth/login") &&
-  !originalRequest.url.includes("auth/signup")
+      !originalRequest.url.includes("auth/signup")
     ) {
-     
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -60,16 +59,27 @@ API.interceptors.response.use(
       isRefreshing = true;
 
       try {
+        
         await API.post("/auth/refresh");
         console.log("✅ Silent refresh SUCCESS — retrying original request");
         processQueue(null);
+        const user = getStore()?.getState()?.auth?.user;
+        if (user?._id) {
+          getStore()?.dispatch(disconnectSocket());
+          getStore()?.dispatch(connectSocket(user._id));
+        }
+
         return API(originalRequest);
+
       } catch (refreshError) {
+
         console.log("❌ Silent refresh FAILED — redirecting to login");
         processQueue(refreshError);
         getStore()?.dispatch(resetAuth());
+        getStore()?.dispatch(disconnectSocket());
         window.location.href = "/";
         return Promise.reject(refreshError);
+
       } finally {
         isRefreshing = false;
       }
@@ -80,4 +90,3 @@ API.interceptors.response.use(
 );
 
 export default API;
-

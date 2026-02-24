@@ -70,6 +70,7 @@ const login = catchAsync(async (req, res, next) => {
 
   user.password = undefined;
   user.refreshToken = undefined;
+  user.email = undefined;
 
   res.status(200).json({
     status: "success",
@@ -146,7 +147,7 @@ const logout = catchAsync(async (req, res, next) => {
 
 
 const getMe = catchAsync(async (req,res,next)=>{ 
-  const user = await User.findById(req.user._id).select('-refreshToken -password');
+  const user = await User.findById(req.user._id).select('-refreshToken -password -email');
   if(!user)
   {
     throw new AppError("User not found",404);

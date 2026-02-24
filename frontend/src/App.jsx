@@ -52,7 +52,7 @@ const App = () => {
           <Route path="group-chats" element={<GroupChats />} />
           <Route path="find" element={<SuggestionFriends />} />
           <Route path="profile" element={<Profile />} />
-          <Route path=":id" element={<ChatRoom />} />
+          <Route path=":chatId" element={<ChatRoom />} />
         </Route>
       </Routes>
     </BrowserRouter>

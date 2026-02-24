@@ -1,17 +1,26 @@
-import React from "react";
 import { Outlet } from "react-router-dom";
-
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getMe } from "../rtk/auth/authAsyncThunk";
 import Sidebar from "../components/common/Sidebar";
 import Navbar from "../components/user/Navbar";
+import { connectSocket, disconnectSocket } from "../rtk/socket/socketThunk";
 
 const UserLayout = () => {
   const dispatch = useDispatch();
+
   useEffect(() => {
     dispatch(getMe());
   }, []);
+
+  const { user } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (user?._id) {
+      dispatch(connectSocket(user._id));
+    }
+    return () => dispatch(disconnectSocket());
+  }, [user?._id]);
 
   return (
     <div className="w-screen min-h-screen">
