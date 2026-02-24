@@ -36,7 +36,6 @@ const getMe = createAsyncThunk("auth/get-me",
   }
 )
 
-
 const logout = createAsyncThunk("auth/logout",async (_,{rejectWithValue})=>{
   try{
         const res = await API.post('/auth/logout');

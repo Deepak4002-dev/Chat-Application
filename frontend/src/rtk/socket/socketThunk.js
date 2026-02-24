@@ -8,6 +8,7 @@ export const connectSocket = (userId)=> (dispatch)=>{
   socket.off("connect_error");
   socket.off("getOnlineUsers");
   socket.off("newRequest");
+  
 
   // Register listeners BEFORE connecting so no event is missed
   socket.on("connect", () => {

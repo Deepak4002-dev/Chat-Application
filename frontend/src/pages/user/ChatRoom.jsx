@@ -1,15 +1,16 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { toast } from "sonner";
 import API from "../../utils/API";
+import { socket } from "../../utils/Socket";
 
 const ChatRoom = () => {
   const { chatId } = useParams();
   const { user } = useSelector((state) => state.auth);
   const [messages, setMessages] = useState([]);
-  const [chat, setChat] = useState("");
+  const [chat, setChat] = useState(null);
   const scrollRef = useRef();
   const [newMessage, setNewMessage] = useState("");
 
@@ -20,30 +21,47 @@ const ChatRoom = () => {
 
   useEffect(() => {
     fetchMessages();
-  }, [chatId]);
 
-  const handleSendMessage = () => {
-    if (!newMessage.trim()) return;
-    const newMsg = {
-      id: messages.length + 1,
-      sender: "u_current",
-      text: newMessage,
-      createdAt: new Date(),
+    socket.on("newPrivateMessage", (data) => {
+      setMessages((prev) => [...prev, data]);
+    });
+
+    return () => {
+      socket.off("newPrivateMessage");
     };
-    setMessages((prev) => [...prev, newMsg]);
-    setNewMessage("");
+  }, []);
+
+  const handleSendMessage = async () => {
+    try {
+      if (!newMessage.trim()) return toast.error("empty content");
+      const newMsg = {
+        chatId: chatId,
+        content: newMessage,
+      };
+
+      const res = await API.post("/chat/create-message", newMsg);
+      // Add sender's own message to state immediately (backend only emits to receiver)
+      // setMessages((prev) => [
+      //   ...prev,
+      //   {
+      //     ...res.data.data,
+      //     sender: { _id: user._id, username: user.username },
+      //   },
+      // ]);
+      setNewMessage("");
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    }
   };
 
   const fetchMessages = async () => {
     try {
-      console.log(chatId);
       const res = await API.get(`/chat/${chatId}`);
-
-      setChat(res.data?.data?.chat);
-      console.log(res.data?.data?.chat);
-      setMessages(res.data?.data?.messages);
+      console.log(res.data?.data);
+      setChat(res.data?.data?.chat ?? null);
+      setMessages(res.data?.data?.messages ?? []);
     } catch (error) {
-      toast.error(error.response.data?.message || error.message);
+      toast.error(error.response?.data?.message || error.message);
     }
   };
 
@@ -53,7 +71,7 @@ const ChatRoom = () => {
       <div className="p-4 bg-white shadow flex items-center rounded-b-2xl">
         <div className="w-10 h-10 rounded-full bg-indigo-400 flex items-center justify-center text-white font-bold mr-4">
           {chat?.otherUser?.username
-            .split(" ")
+            ?.split(" ")
             .map((w) => w[0])
             .join("")
             .toUpperCase()}
@@ -65,28 +83,6 @@ const ChatRoom = () => {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
-        {messages.map((msg) => (
-          <div
-            key={msg._id}
-            ref={scrollRef}
-            className={`max-w-[70%] p-2 rounded-xl break-word ${
-              msg.sender === "u_current"
-                ? "bg-blue-500 text-white self-end"
-                : "bg-gray-200 text-gray-800 self-start"
-            }`}
-          >
-            {msg.sender._id !== user._id && (
-              <p className="text-xs font-semibold">
-                {msg.sender === "u1" ? "Alice" : "Bob"}
-              </p>
-            )}
-            <p>{msg.text}</p>
-            <span className="text-xs text-gray-400 mt-0.5 block text-right">
-              {dayjs(msg.createdAt).format("hh:mm A")}
-            </span>
-          </div>
-        ))}
-
         {messages && messages.length > 0 ? (
           <>
             {messages.map((msg) => (
@@ -94,17 +90,17 @@ const ChatRoom = () => {
                 key={msg._id}
                 ref={scrollRef}
                 className={`max-w-[70%] p-2 rounded-xl break-word ${
-                  msg.sender === "u_current"
+                  msg.sender._id?.toString() === user._id?.toString()
                     ? "bg-blue-500 text-white self-end"
                     : "bg-gray-200 text-gray-800 self-start"
                 }`}
               >
-                {msg.sender._id !== user._id && (
-                  <p className="text-xs font-semibold">
-                    {msg.sender === "u1" ? "Alice" : "Bob"}
+                {msg.sender._id?.toString() !== user._id?.toString() && (
+                  <p className="text-xs font-semibold capitalize">
+                    {msg?.sender?.username}
                   </p>
                 )}
-                <p>{msg.text}</p>
+                <p>{msg.content}</p>
                 <span className="text-xs text-gray-400 mt-0.5 block text-right">
                   {dayjs(msg.createdAt).format("hh:mm A")}
                 </span>
@@ -142,39 +138,3 @@ const ChatRoom = () => {
 };
 
 export default ChatRoom;
-
-// Dummy data simulating API fetch based on chat schema
-// useEffect(() => {
-//   const dummyChat = {
-//     name: chatId === "chat1" ? "Project Team" : "Alice Johnson",
-//     messages: [
-//       {
-//         id: 1,
-//         sender: "u1",
-//         text: "Hello team!",
-//         createdAt: new Date(Date.now() - 7200000),
-//       },
-//       {
-//         id: 2,
-//         sender: "u_current",
-//         text: "Hi Alice, good morning!",
-//         createdAt: new Date(Date.now() - 7100000),
-//       },
-//       {
-//         id: 3,
-//         sender: "u2",
-//         text: "Morning everyone",
-//         createdAt: new Date(Date.now() - 7000000),
-//       },
-//       {
-//         id: 4,
-//         sender: "u_current",
-//         text: "Ready for the meeting?",
-//         createdAt: new Date(Date.now() - 6800000),
-//       },
-//     ],
-//   };
-
-//   setChatName(dummyChat.name);
-//   setMessages(dummyChat.messages);
-// }, [chatId]);
