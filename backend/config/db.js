@@ -4,7 +4,7 @@ import {DB_NAME,MONGODB_URI} from './constants.js'
 const connectDB = async () => {
   try {
     
-    const conn = await mongoose.connect(`${MONGODB_URI}/${DB_NAME}`);
+    const conn = await mongoose.connect(`${MONGODB_URI}`);
     console.log(MONGODB_URI,DB_NAME)
 
     mongoose.connection.on("connected", () => {
