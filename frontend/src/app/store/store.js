@@ -8,7 +8,7 @@ import { setStore } from "./storeRef";
 const persistConfig = {
   key:'root',
   storage,
-  whitelist: ['auth'],   // only persist auth — socket state is always rebuilt on connect
+  whitelist: ['auth',''],   // only persist auth — socket state is always rebuilt on connect
 }
 
 const persistedReducer = persistReducer(persistConfig,rootReducer)

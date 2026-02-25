@@ -24,6 +24,9 @@ export const socketSlice = createSlice({
           state.notificationCount+=1;
         }
       },
+      // updateFriendRequest:(state,action)=>{
+      //   state.friendRequests = state.friendRequests.map((friend)=> friend._id === action.payload._id? )
+      // }
 
     }
   });

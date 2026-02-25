@@ -7,6 +7,7 @@ const SuggestionFriends = () => {
   const { user } = useSelector((state) => state.auth);
   const [users, setUsers] = useState([]);
   const [loadingId, setLoadingId] = useState(null);
+  const { friendRequests } = useSelector((state) => state.socket);
 
   const fetchAllFriends = async () => {
     try {
