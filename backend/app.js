@@ -13,10 +13,12 @@ connectDB();
 import authRoutes from "./routes/auth.route.js";
 import friendRoutes from "./routes/friend.route.js";
 import chatRoutes from "./routes/chat.route.js";
+import { FRONTEND_URL } from "./config/constants.js";
 const app = express();
 app.use(
   cors({
     credentials: true,
+    origin:FRONTEND_URL
   }),
 );
 app.use(express.json());
