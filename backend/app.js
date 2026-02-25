@@ -18,7 +18,8 @@ const app = express();
 app.use(
   cors({
     credentials: true,
-    origin:FRONTEND_URL
+    origin:FRONTEND_URL,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   }),
 );
 app.use(express.json());
