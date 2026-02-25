@@ -2,13 +2,14 @@ import { Server } from "socket.io";
 import cookie from "cookie";
 import { verifyToken } from "../utils/verifyToken.js";
 import Chat from "../models/Chat.js";
+import { FRONTEND_URL } from "./constants.js";
 
 let io;
 
 export const initSocket = (httpServer) => {
   io = new Server(httpServer, {
     cors: {
-      origin: "http://localhost:5173",
+      origin: FRONTEND_URL,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
       credentials: true,
     },
